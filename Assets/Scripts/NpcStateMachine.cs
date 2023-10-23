@@ -1,6 +1,7 @@
 using FSM;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public enum NPCState
@@ -8,6 +9,14 @@ public enum NPCState
     IDLE,
     WALK,
     REST,
+}
+
+public enum SuperState
+{
+    NULL,
+    DAY,
+    NIGHT,
+
 }
 
 public class NpcStateMachine : MonoBehaviour
@@ -19,28 +28,53 @@ public class NpcStateMachine : MonoBehaviour
     [SerializeField] private float speed = 2f;
     [SerializeField] private SpriteRenderer restZone;
 
-    private StateMachine<NPCState> fsm;
+    //分层两个状态
+    private StateMachine<SuperState, string> fsm;
+    private StateMachine<SuperState,NPCState,string> NightSuperState;
+    private StateMachine<SuperState,NPCState,string> DaySuperState;
 
     private int currentIndex = 0;
+
     private void Start()
     {
+        //白天初始化
+        DaySuperState = new StateMachine<SuperState, NPCState, string>();
+        DaySuperState.AddState(NPCState.IDLE, new Idle(animator, idleTime, true));
+        DaySuperState.AddState(NPCState.WALK, new Walk(animator, waypoints,
+            transform, OnCurrentIndexChanged, speed, false));//不需要等待，不需要退出时
 
-        fsm=new StateMachine<NPCState>();
-        fsm.AddState(NPCState.IDLE,new Idle(animator,idleTime,true));
+        DaySuperState.AddTransition(NPCState.WALK, NPCState.IDLE,
+          transition => Vector2.Distance(transform.position, waypoints[currentIndex].position) < 0.1f);
 
-        fsm.AddState(NPCState.WALK, new Walk(animator, waypoints,
+        DaySuperState.AddTransition(NPCState.IDLE, NPCState.WALK);
+
+        //夜晚初始化
+        NightSuperState = new StateMachine<SuperState, NPCState, string>();
+        NightSuperState.AddState(NPCState.IDLE, new Idle(animator, idleTime, true));
+
+        NightSuperState.AddState(NPCState.WALK, new Walk(animator, waypoints,
             transform, OnCurrentIndexChanged, speed, false));//不需要等待，不需要退出时间
-        fsm.AddState(NPCState.REST, new Rest(animator, restTime, true));
+        NightSuperState.AddState(NPCState.REST, new Rest(animator, restTime, true));
 
-        fsm.AddTransition(NPCState.IDLE,NPCState.WALK);
-        fsm.AddTransition(NPCState.REST, NPCState.WALK);
-        
-        fsm.AddTransition(NPCState.WALK, NPCState.REST, transition => Vector2.Distance(transform.position, waypoints[currentIndex].position) < 0.1f &&
+        NightSuperState.AddTransition(NPCState.IDLE, NPCState.WALK);
+        NightSuperState.AddTransition(NPCState.REST, NPCState.WALK);
+
+        NightSuperState.AddTransition(NPCState.WALK, NPCState.REST, transition => Vector2.Distance(transform.position, waypoints[currentIndex].position) < 0.1f &&
         restZone.bounds.Contains(transform.position));//条件更加苛刻，放在前面判断
 
-        fsm.AddTransition(NPCState.WALK,NPCState.IDLE,
-            transition=> Vector2.Distance(transform.position, waypoints[currentIndex].position) < 0.1f);
+        NightSuperState.AddTransition(NPCState.WALK, NPCState.IDLE,
+            transition => Vector2.Distance(transform.position, waypoints[currentIndex].position) < 0.1f);
 
+        NightSuperState.Init();
+        //日夜切换
+        // fsm init
+        fsm = new StateMachine<SuperState, string>();
+
+        fsm.AddState(SuperState.DAY, DaySuperState);
+        fsm.AddState(SuperState.NIGHT, NightSuperState);
+
+        fsm.AddTriggerTransition("Day", new Transition<SuperState>(SuperState.NIGHT, SuperState.DAY));
+        fsm.AddTriggerTransition("Night", new Transition<SuperState>(SuperState.DAY, SuperState.NIGHT));
         fsm.Init();
 
     }
@@ -55,6 +89,12 @@ public class NpcStateMachine : MonoBehaviour
     {
         currentIndex = newIndex;//委托
     }
+
+    public void TriggerNight(bool isNight)
+    {
+        fsm.Trigger(isNight ? "Night" : "Day"); 
+    }
+
 }
 
 
