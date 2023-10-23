@@ -29,12 +29,18 @@ public class NpcStateMachine : MonoBehaviour
         fsm.AddState(NPCState.IDLE,new Idle(animator,idleTime,true));
 
         fsm.AddState(NPCState.WALK, new Walk(animator, waypoints,
-            transform, OnCurrentIndexChanged, speed, false));
-        
+            transform, OnCurrentIndexChanged, speed, false));//不需要等待，不需要退出时间
+        fsm.AddState(NPCState.REST, new Rest(animator, restTime, true));
+
         fsm.AddTransition(NPCState.IDLE,NPCState.WALK);
+        fsm.AddTransition(NPCState.REST, NPCState.WALK);
+        
+        fsm.AddTransition(NPCState.WALK, NPCState.REST, transition => Vector2.Distance(transform.position, waypoints[currentIndex].position) < 0.1f &&
+        restZone.bounds.Contains(transform.position));//条件更加苛刻，放在前面判断
+
         fsm.AddTransition(NPCState.WALK,NPCState.IDLE,
             transition=> Vector2.Distance(transform.position, waypoints[currentIndex].position) < 0.1f);
-       
+
         fsm.Init();
 
     }
