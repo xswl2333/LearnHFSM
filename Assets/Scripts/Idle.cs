@@ -24,7 +24,7 @@ public class Idle : StateBase<NPCState>
     {
         if (timer.Elapsed > idleTime)
         {
-            fsm.StateCanExit();
+           fsm.StateCanExit();
         }
     }
 

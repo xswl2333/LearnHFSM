@@ -9,6 +9,7 @@ public enum NPCState
     IDLE,
     WALK,
     REST,
+    JUMP,
 }
 
 public enum SuperState
@@ -16,6 +17,7 @@ public enum SuperState
     NULL,
     DAY,
     NIGHT,
+    DUSK//»Æ»è
 
 }
 
@@ -30,9 +32,11 @@ public class NpcStateMachine : MonoBehaviour
 
     //·Ö²ãÁ½¸ö×´Ì¬
     private StateMachine<SuperState, string> fsm;
-    private StateMachine<SuperState,NPCState,string> NightSuperState;
-    private StateMachine<SuperState,NPCState,string> DaySuperState;
+    private StateMachine<SuperState, NPCState, string> NightSuperState;
+    private StateMachine<SuperState, NPCState, string> DaySuperState;
+    private StateMachine<SuperState, NPCState, string> DuskSuperState;
 
+    private int jumpTimes = 0;
     private int currentIndex = 0;
 
     private void Start()
@@ -47,6 +51,7 @@ public class NpcStateMachine : MonoBehaviour
           transition => Vector2.Distance(transform.position, waypoints[currentIndex].position) < 0.1f);
 
         DaySuperState.AddTransition(NPCState.IDLE, NPCState.WALK);
+        DaySuperState.Init();
 
         //Ò¹Íí³õÊ¼»¯
         NightSuperState = new StateMachine<SuperState, NPCState, string>();
@@ -66,15 +71,26 @@ public class NpcStateMachine : MonoBehaviour
             transition => Vector2.Distance(transform.position, waypoints[currentIndex].position) < 0.1f);
 
         NightSuperState.Init();
+        //»Æ»è³õÊ¼»¯
+        DuskSuperState = new StateMachine<SuperState, NPCState, string>();
+        DuskSuperState.AddState(NPCState.IDLE, new Idle(animator, idleTime, true));
+        DuskSuperState.AddState(NPCState.JUMP, new Jump(animator, transform, OnCurrentJumpTimesChanged, false));
+        DuskSuperState.AddTransition(NPCState.IDLE, NPCState.JUMP,transition=>jumpTimes==0);
+        DuskSuperState.AddTransition(NPCState.JUMP, NPCState.IDLE,
+          transition => jumpTimes >= 2);
+
+        DuskSuperState.Init();
         //ÈÕÒ¹ÇÐ»»
         // fsm init
         fsm = new StateMachine<SuperState, string>();
 
         fsm.AddState(SuperState.DAY, DaySuperState);
         fsm.AddState(SuperState.NIGHT, NightSuperState);
+        fsm.AddState(SuperState.DUSK, DuskSuperState);
 
         fsm.AddTriggerTransition("Day", new Transition<SuperState>(SuperState.NIGHT, SuperState.DAY));
         fsm.AddTriggerTransition("Night", new Transition<SuperState>(SuperState.DAY, SuperState.NIGHT));
+
         fsm.Init();
 
     }
@@ -90,9 +106,14 @@ public class NpcStateMachine : MonoBehaviour
         currentIndex = newIndex;//Î¯ÍÐ
     }
 
+    private void OnCurrentJumpTimesChanged(int newTimes)
+    {
+        jumpTimes = newTimes;//Î¯ÍÐ
+    }
+
     public void TriggerNight(bool isNight)
     {
-        fsm.Trigger(isNight ? "Night" : "Day"); 
+        fsm.Trigger(isNight ? "Night" : "Day");
     }
 
 }

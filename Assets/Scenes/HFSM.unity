@@ -1240,6 +1240,7 @@ MonoBehaviour:
   - {fileID: 2142139760}
   speed: 2
   restZone: {fileID: 238795351}
+  jumpTime: 1
 --- !u!95 &4009187018262121404 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 3960860281246684766, guid: 14fd660601433de4c88fe9d9b52979e4, type: 3}
