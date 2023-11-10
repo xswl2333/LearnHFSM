@@ -638,8 +638,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bbf6658c53d6c99439c3a09624f8ab85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dayColor: {r: 0.38431373, g: 0.7921569, b: 0.4509804, a: 0}
-  nightColor: {r: 0.18903525, g: 0.2264151, b: 0.19493732, a: 0}
+  dayColor: {r: 0.6659398, g: 0.6886792, b: 0.67020345, a: 0}
+  nightColor: {r: 0.32003617, g: 0.21462265, b: 0.8584906, a: 0}
+  duskColor: {r: 0.8962264, g: 0.252445, b: 0.10568706, a: 0}
 --- !u!1 &599728095
 GameObject:
   m_ObjectHideFlags: 0
@@ -809,31 +810,7 @@ MonoBehaviour:
   m_Group: {fileID: 0}
   onValueChanged:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 519420033}
-        m_TargetAssemblyTypeName: CameraColor, Assembly-CSharp
-        m_MethodName: ChangeColor
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 4009187018262121403}
-        m_TargetAssemblyTypeName: NpcStateMachine, Assembly-CSharp
-        m_MethodName: TriggerNight
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   m_IsOn: 1
 --- !u!1 &1349609033
 GameObject:
@@ -1232,6 +1209,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69a11dac369e7bc458f097064cf064dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  oneDayTime: 60
   animator: {fileID: 4009187018262121404}
   idleTime: 1
   restTime: 6
@@ -1240,7 +1218,7 @@ MonoBehaviour:
   - {fileID: 2142139760}
   speed: 2
   restZone: {fileID: 238795351}
-  jumpTime: 1
+  mainCamera: {fileID: 519420031}
 --- !u!95 &4009187018262121404 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 3960860281246684766, guid: 14fd660601433de4c88fe9d9b52979e4, type: 3}
